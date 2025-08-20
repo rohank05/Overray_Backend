@@ -8,39 +8,39 @@ export default {
         email,
     }) {
         const verificationLink = `${process.env.BASE_URL}/v1/auth/user/verify/${verificationToken}`;
-        const email_queue = new schemas.email_queue({
+        const emailQueue = new schemas.email_queue({
             email_template: "verification_email_template",
             tags: { verificationLink, name },
             subject: "Overray Email Verification",
         });
 
-        await email_queue.save();
-        const email_recipient = new schemas.email_recipient({
+        await emailQueue.save();
+        const emailRecipient = new schemas.email_recipient({
             name,
             email,
-            email_queue_id: email_queue._id,
+            email_queue_id: emailQueue._id,
         });
-        email_recipient.save();
+        emailRecipient.save();
     },
     createResetPasswordEmail: async function ({ name, email, otp }) {
-        const reset_password = new schemas.reset_password({
+        const resetPassword = new schemas.reset_password({
             email,
             otp,
             expiresAt: new Date(Date.now() + this.expiresIn * 60000),
         });
-        reset_password.save();
-        const email_queue = new schemas.email_queue({
+        resetPassword.save();
+        const emailQueue2 = new schemas.email_queue({
             email_template: "reset_password_template",
             tags: { name, otp, expirationTime: this.expiresIn },
             subject: "Account Password Recovery",
         });
-        await email_queue.save();
-        const email_recipient = new schemas.email_recipient({
+        await emailQueue2.save();
+        const emailRecipient2 = new schemas.email_recipient({
             name,
             email,
-            email_queue_id: email_queue._id,
+            email_queue_id: emailQueue2._id,
         });
-        email_recipient.save();
+        emailRecipient2.save();
     },
     sendPhoneVerification: async (phoneNumber) => {
         return optless.sendOTP({ phoneNumber });

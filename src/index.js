@@ -1,6 +1,6 @@
 import Express from "express";
 import cors from "cors";
-import version_1 from "./routes/index.js";
+import version1 from "./routes/index.js";
 import databaseOperations from "./database/databaseOperations.js";
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@apollo/server/express4";
@@ -41,7 +41,7 @@ import logger from "./utils/logger.js";
         });
     });
 
-    app.use("/v1", version_1);
+    app.use("/v1", version1);
 
     app.use(
         "/v1/graphql",

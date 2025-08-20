@@ -12,12 +12,12 @@ class Firebase {
         this.message = getMessaging();
     }
     async sendNotificationToUser({ userId, title, body, data = {} }) {
-        const device_token = await schemas.device_token.findOne({
+        const deviceToken = await schemas.device_token.findOne({
             user_id: userId,
         });
-        if (device_token) {
+        if (deviceToken) {
             await this.sendPushNotification(
-                device_token.token,
+                deviceToken.token,
                 title,
                 body,
                 data,

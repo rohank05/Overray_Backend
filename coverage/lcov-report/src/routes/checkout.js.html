@@ -435,7 +435,7 @@ const razorpay = <span class="cstat-no" title="statement not covered" >new Razor
 <span class="cstat-no" title="statement not covered" >app.post("/initiate", <span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >    try {</span>
         const { _id: userId } = <span class="cstat-no" title="statement not covered" >req.user;</span>
-        const { products, address_id, coupon_code, isCOD } = <span class="cstat-no" title="statement not covered" >req.body;</span>
+        const { products, address_id: addressId, coupon_code: couponCode, isCOD } = <span class="cstat-no" title="statement not covered" >req.body;</span>
 <span class="cstat-no" title="statement not covered" >        if (!products) <span class="cstat-no" title="statement not covered" >return res.sendStatus(400);</span></span>
         const productsIds = <span class="cstat-no" title="statement not covered" >products.map(<span class="fstat-no" title="function not covered" >(p</span>roduct) =&gt; <span class="cstat-no" title="statement not covered" >product._id)</span>;</span>
         const productDetails = <span class="cstat-no" title="statement not covered" >await schemas.product.find({</span>
@@ -472,16 +472,16 @@ const razorpay = <span class="cstat-no" title="statement not covered" >new Razor
                     product.quantity,
             });
         }
-        const address = <span class="cstat-no" title="statement not covered" >await schemas.address.findById(address_id);</span>
-        const delivery_pincode = <span class="cstat-no" title="statement not covered" >address.pincode;</span>
-        const delivery_charges = <span class="cstat-no" title="statement not covered" >await shiprocket.calculateShippingRate(</span>
-            delivery_pincode,
+        const address = <span class="cstat-no" title="statement not covered" >await schemas.address.findById(addressId);</span>
+        const deliveryPincode = <span class="cstat-no" title="statement not covered" >address.pincode;</span>
+        const deliveryCharges = <span class="cstat-no" title="statement not covered" >await shiprocket.calculateShippingRate(</span>
+            deliveryPincode,
             totalWeight / 1000,
         );
         let appliedCoupon = <span class="cstat-no" title="statement not covered" >null;</span>
-<span class="cstat-no" title="statement not covered" >        if (coupon_code) {</span>
+<span class="cstat-no" title="statement not covered" >        if (couponCode) {</span>
 <span class="cstat-no" title="statement not covered" >            appliedCoupon = await schemas.coupon.findOne({</span>
-                code: coupon_code.toUpperCase(),
+                code: couponCode.toUpperCase(),
                 is_active: true,
                 valid_from: { $lte: new Date() },
                 valid_until: { $gte: new Date() },
@@ -505,13 +505,13 @@ const razorpay = <span class="cstat-no" title="statement not covered" >new Razor
                     } else <span class="cstat-no" title="statement not covered" >if (</span>
                         appliedCoupon.discount_type === "free_shipping"
                     ) {
-<span class="cstat-no" title="statement not covered" >                        delivery_charges.rate = 0;</span>
+<span class="cstat-no" title="statement not covered" >                        deliveryCharges.rate = 0;</span>
                     } else <span class="cstat-no" title="statement not covered" >if (appliedCoupon.discount_type === "first-time") {</span>
                         const orderCount = <span class="cstat-no" title="statement not covered" >await schemas.order.countDocuments({</span>
                             user_id: userId,
                         });
 <span class="cstat-no" title="statement not covered" >                        if (orderCount === 0) {</span>
-<span class="cstat-no" title="statement not covered" >                            discountAmount = coupon.discount_value;</span>
+<span class="cstat-no" title="statement not covered" >                            discountAmount = appliedCoupon.discount_value;</span>
                         } else {
 <span class="cstat-no" title="statement not covered" >                            throw new Error(</span>
                                 "This coupon is only valid for first-time purchases",
@@ -532,7 +532,7 @@ const razorpay = <span class="cstat-no" title="statement not covered" >new Razor
             }
         }
 &nbsp;
-<span class="cstat-no" title="statement not covered" >        totalAmount += delivery_charges.rate;</span>
+<span class="cstat-no" title="statement not covered" >        totalAmount += deliveryCharges.rate;</span>
 &nbsp;
         const taxRate = <span class="cstat-no" title="statement not covered" >0.05;</span>
         const sgst = <span class="cstat-no" title="statement not covered" >totalAmount * taxRate;</span>
@@ -554,9 +554,9 @@ const razorpay = <span class="cstat-no" title="statement not covered" >new Razor
             total_amount: totalAmount,
             status: isCOD ? "Processing" : "Pending",
             razorpay_orderId: isCOD ? null : razorpayOrder.id,
-            delivery_charges: delivery_charges.rate,
-            courier_company_id: delivery_charges.courier_company_id,
-            address: address_id,
+            delivery_charges: deliveryCharges.rate,
+            courier_company_id: deliveryCharges.courier_company_id,
+            address: addressId,
             coupon: appliedCoupon
                 ? {
                     code: appliedCoupon.code,
@@ -607,7 +607,7 @@ export default app;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-08-20T11:47:56.466Z
+                at 2025-08-20T12:22:54.392Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

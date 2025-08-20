@@ -58,16 +58,16 @@ const processEmail = async () => {
         .exec();
     for (const queueItem of pendingEmails) {
         const templateHtml = await getEmailTemplate(queueItem.email_template);
-        const email_recipient = await schemas.email_recipient.findOne({
+        const emailRecipient = await schemas.email_recipient.findOne({
             email_queue_id: queueItem._id,
         });
-        if (templateHtml && email_recipient) {
+        if (templateHtml && emailRecipient) {
             const replacedHtml = replaceTagsInTemplate(
                 templateHtml,
                 queueItem.tags,
             );
             const success = await sendEmail(
-                email_recipient,
+                emailRecipient,
                 queueItem.subject || "Email Notification",
                 replacedHtml,
             );

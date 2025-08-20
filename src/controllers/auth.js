@@ -144,12 +144,12 @@ const forgotPassword = async (email) => {
 };
 
 const verifyOTP = async (email, otp) => {
-    const reset_password = await schemas.reset_password.findOne({
+    const resetPassword = await schemas.reset_password.findOne({
         email,
         otp,
         expiresAt: { $gt: new Date() },
     });
-    if (!reset_password) {
+    if (!resetPassword) {
         return { message: "Invalid OTP", error: true };
     }
     return { message: "OTP verified successfully" };
@@ -166,10 +166,10 @@ const updatePassword = async (email, password) => {
 };
 
 const logout = async (token) => {
-    const blocked_token = new schemas.blocked_token({
+    const blockedToken = new schemas.blocked_token({
         token,
     });
-    await blocked_token.save();
+    await blockedToken.save();
     return { message: "Logout Succesfully" };
 };
 

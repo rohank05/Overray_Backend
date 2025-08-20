@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/25</span>
+                <span class='fraction'>0/26</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/25</span>
+                <span class='fraction'>0/26</span>
             </div>
         
             
@@ -176,7 +176,7 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -253,27 +253,27 @@ class Shiprocket {
 &nbsp;
 <span class="fstat-no" title="function not covered" >    as</span>ync calculateShippingRate(deliveryPinCode, totalWeight) {
 <span class="cstat-no" title="statement not covered" >        try {</span>
-            const response = <span class="cstat-no" title="statement not covered" >await fetch(</span>
-                `${this.apiUrl}/courier/serviceability?pickup_postcode=110045&amp;delivery_postcode=${deliveryPinCode}&amp;weight=${totalWeight}&amp;cod=0`,
-                {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${this.token}`,
-                    },
+            const serviceabilityUrl = <span class="cstat-no" title="statement not covered" >`${this.apiUrl}/courier/serviceability` +</span>
+                `?pickup_postcode=110045&amp;delivery_postcode=${deliveryPinCode}` +
+                `&amp;weight=${totalWeight}&amp;cod=0`;
+            const response = <span class="cstat-no" title="statement not covered" >await fetch(serviceabilityUrl, {</span>
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${this.token}`,
                 },
-            ).then(<span class="fstat-no" title="function not covered" >(r</span>es) =&gt; <span class="cstat-no" title="statement not covered" >res.json())</span>;
-            const company_id = <span class="cstat-no" title="statement not covered" >response.data.shiprocket_recommended_courier_id;</span>
-            const delivery_data =
+            }).then(<span class="fstat-no" title="function not covered" >(r</span>es) =&gt; <span class="cstat-no" title="statement not covered" >res.json())</span>;
+            const companyId = <span class="cstat-no" title="statement not covered" >response.data.shiprocket_recommended_courier_id;</span>
+            const deliveryData =
 <span class="cstat-no" title="statement not covered" >                response.data.available_courier_companies.find(</span>
-<span class="fstat-no" title="function not covered" >                    (x</span>) =&gt; (<span class="cstat-no" title="statement not covered" >x.courier_company_id = company_id)</span>,
+<span class="fstat-no" title="function not covered" >                    (x</span>) =&gt; (<span class="cstat-no" title="statement not covered" >x.courier_company_id = companyId)</span>,
                 );
-<span class="cstat-no" title="statement not covered" >            return delivery_data;</span>
+<span class="cstat-no" title="statement not covered" >            return deliveryData;</span>
         } catch (error) {
 <span class="cstat-no" title="statement not covered" >            logger.error(error);</span>
         }
     }
-<span class="fstat-no" title="function not covered" >    as</span>ync createOrder(orderDetails, courier_company_id) {
+<span class="fstat-no" title="function not covered" >    as</span>ync createOrder(orderDetails, courierCompanyId) {
 <span class="cstat-no" title="statement not covered" >        try {</span>
             const order = <span class="cstat-no" title="statement not covered" >await fetch(`${this.apiUrl}/orders/create/adhoc`, {</span>
                 method: "POST",
@@ -283,9 +283,9 @@ class Shiprocket {
                 },
                 body: JSON.stringify(orderDetails),
             }).then(<span class="fstat-no" title="function not covered" >(r</span>es) =&gt; <span class="cstat-no" title="statement not covered" >res.json())</span>;
-            const shipment_details = <span class="cstat-no" title="statement not covered" >{</span>
+            const shipmentDetails = <span class="cstat-no" title="statement not covered" >{</span>
                 shipment_id: order.shipment_id,
-                courier_id: courier_company_id,
+                courier_id: courierCompanyId,
             };
             const shipment = <span class="cstat-no" title="statement not covered" >await fetch(`${this.apiUrl}/courier/assign/awb`, {</span>
                 method: "POST",
@@ -293,7 +293,7 @@ class Shiprocket {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${this.token}`,
                 },
-                body: JSON.stringify(shipment_details),
+                body: JSON.stringify(shipmentDetails),
             }).then(<span class="fstat-no" title="function not covered" >(r</span>es) =&gt; <span class="cstat-no" title="statement not covered" >res.json())</span>;
 <span class="cstat-no" title="statement not covered" >            return shipment;</span>
         } catch (error) {
@@ -310,7 +310,7 @@ export default new Shiprocket();
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-08-20T11:47:56.466Z
+                at 2025-08-20T12:22:54.392Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

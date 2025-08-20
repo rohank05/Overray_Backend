@@ -372,7 +372,9 @@
 <a name='L307'></a><a href='#L307'>307</a>
 <a name='L308'></a><a href='#L308'>308</a>
 <a name='L309'></a><a href='#L309'>309</a>
-<a name='L310'></a><a href='#L310'>310</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L310'></a><a href='#L310'>310</a>
+<a name='L311'></a><a href='#L311'>311</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -686,8 +688,9 @@ import mongoose from "mongoose";
 import { GraphQLError } from "graphql";
 import cartService from "../services/cartService.js";
 import wishlistService from "../services/wishlistService.js";
-import { validateInput, cartValidation, wishlistValidation, addressValidation, reviewValidation } from "../validators/inputValidation.js";
+import { validateInput, cartValidation, wishlistValidation } from "../validators/inputValidation.js";
 import { ERROR_CODES, ERROR_MESSAGES } from "../constants/index.js";
+import logger from "../utils/logger.js";
 &nbsp;
 const checkAuthentication = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(c</span>ontext) =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >    if (!context.user)</span>
@@ -866,7 +869,7 @@ export const resolvers = <span class="cstat-no" title="statement not covered" >{
         lookup: <span class="fstat-no" title="function not covered" >as</span>ync () =&gt; {
 <span class="cstat-no" title="statement not covered" >            return await schemas.lookup.find().exec();</span>
         },
-        coupons: <span class="fstat-no" title="function not covered" >as</span>ync (_, { filter }, { models }) =&gt; {
+        coupons: <span class="fstat-no" title="function not covered" >as</span>ync (_, { filter }, { _models }) =&gt; {
 <span class="cstat-no" title="statement not covered" >            try {</span>
                 const query = <span class="cstat-no" title="statement not covered" >{};</span>
 &nbsp;
@@ -897,15 +900,15 @@ export const resolvers = <span class="cstat-no" title="statement not covered" >{
 &nbsp;
 <span class="cstat-no" title="statement not covered" >                return await schemas.coupon.find(query);</span>
             } catch (error) {
-<span class="cstat-no" title="statement not covered" >                console.error("Error fetching coupons:", error);</span>
+<span class="cstat-no" title="statement not covered" >                logger.error("Error fetching coupons:", error);</span>
 <span class="cstat-no" title="statement not covered" >                throw new Error("Failed to fetch coupons");</span>
             }
         },
-        coupon: <span class="fstat-no" title="function not covered" >as</span>ync (_, { id }, { models }) =&gt; {
+        coupon: <span class="fstat-no" title="function not covered" >as</span>ync (_, { id }, { _models }) =&gt; {
 <span class="cstat-no" title="statement not covered" >            try {</span>
 <span class="cstat-no" title="statement not covered" >                return await schemas.coupon.findById(id);</span>
             } catch (error) {
-<span class="cstat-no" title="statement not covered" >                console.error("Error fetching coupon:", error);</span>
+<span class="cstat-no" title="statement not covered" >                logger.error("Error fetching coupon:", error);</span>
 <span class="cstat-no" title="statement not covered" >                throw new Error("Failed to fetch coupon");</span>
             }
         },
@@ -930,11 +933,11 @@ export const resolvers = <span class="cstat-no" title="statement not covered" >{
         addProductToCart: <span class="fstat-no" title="function not covered" >as</span>ync (parent, args, contextValue) =&gt; {
 <span class="cstat-no" title="statement not covered" >            checkAuthentication(contextValue);</span>
             const validatedInput = <span class="cstat-no" title="statement not covered" >validateInput(args.products, cartValidation.addToCart);</span>
-            const { product_id, quantity } = <span class="cstat-no" title="statement not covered" >validatedInput;</span>
+            const { product_id: productId, quantity } = <span class="cstat-no" title="statement not covered" >validatedInput;</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >            return await cartService.addProductToCart(</span>
                 contextValue.user._id,
-                product_id,
+                productId,
                 quantity,
             );
         },
@@ -967,26 +970,26 @@ export const resolvers = <span class="cstat-no" title="statement not covered" >{
         },
         addProductReview: <span class="fstat-no" title="function not covered" >as</span>ync (parent, args, contextValue) =&gt; {
 <span class="cstat-no" title="statement not covered" >            checkAuthentication(contextValue);</span>
-            const { review, score, product_id } = <span class="cstat-no" title="statement not covered" >args.review;</span>
+            const { review, score, product_id: productId } = <span class="cstat-no" title="statement not covered" >args.review;</span>
 &nbsp;
-            let product_review = <span class="cstat-no" title="statement not covered" >await schemas.product_review.findOne({</span>
+            let productReview = <span class="cstat-no" title="statement not covered" >await schemas.product_review.findOne({</span>
                 user_id: contextValue.user._id,
-                product_id: product_id,
+                product_id: productId,
             });
-<span class="cstat-no" title="statement not covered" >            if (!product_review) {</span>
+<span class="cstat-no" title="statement not covered" >            if (!productReview) {</span>
                 const newReview = <span class="cstat-no" title="statement not covered" >new schemas.product_review({</span>
                     user_id: contextValue.user._id,
-                    product_id: product_id,
+                    product_id: productId,
                     review: review,
                     score: score,
                 });
-<span class="cstat-no" title="statement not covered" >                product_review = await newReview.save();</span>
-<span class="cstat-no" title="statement not covered" >                return product_review;</span>
+<span class="cstat-no" title="statement not covered" >                productReview = await newReview.save();</span>
+<span class="cstat-no" title="statement not covered" >                return productReview;</span>
             }
-<span class="cstat-no" title="statement not covered" >            product_review.review = review;</span>
-<span class="cstat-no" title="statement not covered" >            product_review.score = score;</span>
-<span class="cstat-no" title="statement not covered" >            product_review = await product_review.save();</span>
-<span class="cstat-no" title="statement not covered" >            return product_review;</span>
+<span class="cstat-no" title="statement not covered" >            productReview.review = review;</span>
+<span class="cstat-no" title="statement not covered" >            productReview.score = score;</span>
+<span class="cstat-no" title="statement not covered" >            productReview = await productReview.save();</span>
+<span class="cstat-no" title="statement not covered" >            return productReview;</span>
         },
     },
 };
@@ -997,7 +1000,7 @@ export const resolvers = <span class="cstat-no" title="statement not covered" >{
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-08-20T11:47:56.466Z
+                at 2025-08-20T12:22:54.392Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

@@ -5,9 +5,9 @@ import logger from "../../utils/logger.js";
 const app = Router();
 app.post("/create-shipment", async (req, res) => {
     try {
-        const { order_id, height, weight, length, breadth } = req.body;
+        const { order_id: orderId, height, weight, length, breadth } = req.body;
         const order = await schemas.order
-            .findById(order_id)
+            .findById(orderId)
             .populate("address")
             .populate("products.product_id")
             .exec();

@@ -248,11 +248,11 @@ export const resolvers = {
         addProductToCart: async (parent, args, contextValue) => {
             checkAuthentication(contextValue);
             const validatedInput = validateInput(args.products, cartValidation.addToCart);
-            const { product_id, quantity } = validatedInput;
+            const { product_id: productId, quantity } = validatedInput;
 
             return await cartService.addProductToCart(
                 contextValue.user._id,
-                product_id,
+                productId,
                 quantity,
             );
         },
@@ -285,26 +285,26 @@ export const resolvers = {
         },
         addProductReview: async (parent, args, contextValue) => {
             checkAuthentication(contextValue);
-            const { review, score, product_id } = args.review;
+            const { review, score, product_id: productId } = args.review;
 
-            let product_review = await schemas.product_review.findOne({
+            let productReview = await schemas.product_review.findOne({
                 user_id: contextValue.user._id,
-                product_id: product_id,
+                product_id: productId,
             });
-            if (!product_review) {
+            if (!productReview) {
                 const newReview = new schemas.product_review({
                     user_id: contextValue.user._id,
-                    product_id: product_id,
+                    product_id: productId,
                     review: review,
                     score: score,
                 });
-                product_review = await newReview.save();
-                return product_review;
+                productReview = await newReview.save();
+                return productReview;
             }
-            product_review.review = review;
-            product_review.score = score;
-            product_review = await product_review.save();
-            return product_review;
+            productReview.review = review;
+            productReview.score = score;
+            productReview = await productReview.save();
+            return productReview;
         },
     },
 };
