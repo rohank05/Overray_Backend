@@ -98,7 +98,7 @@ jobs:
       run: npm audit --json > audit.json || true
 
     - name: Upload audit results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: security-audit
         path: audit.json
