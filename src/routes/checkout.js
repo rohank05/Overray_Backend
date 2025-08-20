@@ -88,7 +88,7 @@ app.post("/initiate", async (req, res) => {
                             user_id: userId,
                         });
                         if (orderCount === 0) {
-                            discountAmount = coupon.discount_value;
+                            discountAmount = appliedCoupon.discount_value;
                         } else {
                             throw new Error(
                                 "This coupon is only valid for first-time purchases",

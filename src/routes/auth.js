@@ -27,7 +27,10 @@ app.post("/register/google", async (req, res) => {
             idToken: token,
             audience: process.env.GOOGLE_CLIENT_ID,
         })
-        .catch(console.error);
+        .catch((error) => {
+            logger.error("Error verifying Google token:", error);
+            return null;
+        });
     const payload = ticket.getPayload();
     if (payload.email !== email) return res.json({ error: "Invalid email" });
     const message = await auth.registerWithGoogle({

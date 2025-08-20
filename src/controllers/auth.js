@@ -157,7 +157,7 @@ const verifyOTP = async (email, otp) => {
 
 const updatePassword = async (email, password) => {
     password = await bcrypt.hash(password, 10);
-    const user = await schemas.security_user.findOneAndUpdate(
+    await schemas.security_user.findOneAndUpdate(
         { email },
         { $set: { password } },
     );

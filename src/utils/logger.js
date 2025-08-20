@@ -3,14 +3,7 @@ import rfs from "file-stream-rotator";
 import pino, { multistream } from "pino";
 import pretty from "pino-pretty";
 
-const { logging: loggingConfigOverrides = {} } = {};
-
-const {
-    prettyPrint: prettyConfig = {},
-    file: fileConfig = {},
-    otherConfig = {},
-    customLevels = {},
-} = loggingConfigOverrides;
+// Configuration setup for logging
 
 const loggingConfig = {
     postLevel: "error",
@@ -94,12 +87,11 @@ if (loggingConfig.logLevel !== "error") {
 const logger = pino(
     {
         level: logLevel || "info", // this MUST be set at the lowest level of the destination
-        customLevels,
         mixin: loggingConfig.mixin,
     },
     multistream(streams, {
         dedupe: true,
-        levels: { ...pino.levels, ...customLevels },
+        levels: { ...pino.levels },
     }),
 );
 

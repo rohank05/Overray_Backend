@@ -1,6 +1,7 @@
 import { initializeApp, credential } from "firebase-admin";
 import { getMessaging } from "firebase-admin/messaging";
 import schemas from "../database/schemas/index.js";
+import logger from "./logger.js";
 const serviceAccount = require("../../overray-firebase-service.json");
 
 class Firebase {
@@ -16,7 +17,7 @@ class Firebase {
         });
         if (device_token) {
             await this.sendPushNotification(
-                deviceToken.token,
+                device_token.token,
                 title,
                 body,
                 data,
@@ -35,10 +36,10 @@ class Firebase {
 
         try {
             const response = await message().send(message);
-            console.log("Successfully sent message:", response);
+            logger.info("Successfully sent message:", response);
             return response;
         } catch (error) {
-            console.error("Error sending message:", error);
+            logger.error("Error sending message:", error);
             throw error;
         }
     }

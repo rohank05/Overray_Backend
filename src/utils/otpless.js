@@ -1,3 +1,5 @@
+import logger from "./logger.js";
+
 class OTPLess {
     clientKey = process.env.OTPLESS_CLIENT_ID;
     clientSecret = process.env.OTPLESS_CLIENT_SECRET;
@@ -44,7 +46,7 @@ class OTPLess {
 
             return result;
         } catch (error) {
-            console.error("OTP sending failed:", error);
+            logger.error("OTP sending failed:", error);
             throw error;
         }
     }
@@ -68,7 +70,7 @@ class OTPLess {
 
             return result;
         } catch (error) {
-            console.error("OTP verification failed:", error);
+            logger.error("OTP verification failed:", error);
             throw error;
         }
     }

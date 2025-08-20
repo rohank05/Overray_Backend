@@ -3,8 +3,9 @@ import mongoose from "mongoose";
 import { GraphQLError } from "graphql";
 import cartService from "../services/cartService.js";
 import wishlistService from "../services/wishlistService.js";
-import { validateInput, cartValidation, wishlistValidation, addressValidation, reviewValidation } from "../validators/inputValidation.js";
+import { validateInput, cartValidation, wishlistValidation } from "../validators/inputValidation.js";
 import { ERROR_CODES, ERROR_MESSAGES } from "../constants/index.js";
+import logger from "../utils/logger.js";
 
 const checkAuthentication = (context) => {
     if (!context.user)
@@ -183,7 +184,7 @@ export const resolvers = {
         lookup: async () => {
             return await schemas.lookup.find().exec();
         },
-        coupons: async (_, { filter }, { models }) => {
+        coupons: async (_, { filter }, { _models }) => {
             try {
                 const query = {};
 
@@ -214,15 +215,15 @@ export const resolvers = {
 
                 return await schemas.coupon.find(query);
             } catch (error) {
-                console.error("Error fetching coupons:", error);
+                logger.error("Error fetching coupons:", error);
                 throw new Error("Failed to fetch coupons");
             }
         },
-        coupon: async (_, { id }, { models }) => {
+        coupon: async (_, { id }, { _models }) => {
             try {
                 return await schemas.coupon.findById(id);
             } catch (error) {
-                console.error("Error fetching coupon:", error);
+                logger.error("Error fetching coupon:", error);
                 throw new Error("Failed to fetch coupon");
             }
         },

@@ -28,16 +28,16 @@ class Shiprocket {
 
     async calculateShippingRate(deliveryPinCode, totalWeight) {
         try {
-            const response = await fetch(
-                `${this.apiUrl}/courier/serviceability?pickup_postcode=110045&delivery_postcode=${deliveryPinCode}&weight=${totalWeight}&cod=0`,
-                {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${this.token}`,
-                    },
+            const serviceabilityUrl = `${this.apiUrl}/courier/serviceability` +
+                `?pickup_postcode=110045&delivery_postcode=${deliveryPinCode}` +
+                `&weight=${totalWeight}&cod=0`;
+            const response = await fetch(serviceabilityUrl, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${this.token}`,
                 },
-            ).then((res) => res.json());
+            }).then((res) => res.json());
             const company_id = response.data.shiprocket_recommended_courier_id;
             const delivery_data =
                 response.data.available_courier_companies.find(

@@ -1,5 +1,4 @@
 import schemas from "../database/schemas/index.js";
-import logger from "../utils/logger.js";
 import optless from "../utils/otpless.js";
 export default {
     expiresIn: 15,

@@ -3,6 +3,7 @@ import schemas from "./database/schemas/index.js";
 import fs from "fs";
 import sgMail from "@sendgrid/mail";
 import { fileURLToPath } from "url";
+import logger from "./utils/logger.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -29,7 +30,7 @@ const getEmailTemplate = async (templateName) => {
     try {
         return fs.readFileSync(templatePath, "utf8");
     } catch (error) {
-        console.error(`Error reading template file ${templateName}:`, error);
+        logger.error(`Error reading template file ${templateName}:`, error);
         return null;
     }
 };
@@ -46,7 +47,7 @@ async function sendEmail(recipient, subject, html) {
         await sgMail.send(msg);
         return true;
     } catch (error) {
-        console.error("Error sending email:", error);
+        logger.error("Error sending email:", error);
         return false;
     }
 }
@@ -80,7 +81,7 @@ const processEmail = async () => {
 
             await queueItem.save();
         } else {
-            console.error(
+            logger.error(
                 `Failed to process email: templateName=${queueItem.templateName}, recipientId=${queueItem._id}`,
             );
             queueItem.status = "failed";
