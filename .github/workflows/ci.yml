@@ -64,8 +64,28 @@ jobs:
     - name: Verify application starts
       run: |
         # Create a minimal .env.local for testing
-        echo "PORT=3000" > .env.local
-        echo "NODE_ENV=test" >> .env.local
+        cat > .env.local << 'EOF'
+        PORT=3000
+        NODE_ENV=test
+        DB_URL=mongodb://localhost:27017
+        DB_NAME=test_db
+        JWT_SECRET=test_secret_for_ci
+        JWT_SECRET_VERIFICATION=test_verification_secret_for_ci
+        RAZOR_PAY_KEY_ID=test_key
+        RAZOR_PAY_KEY_SECRET=test_secret
+        BASE_URL=http://localhost:3000
+        SEND_GRID_KEY=test_key
+        SENDER_EMAIL=test@example.com
+        PRIMARY_PICKUP_NAME=test_pickup
+        SHIPROCKET_EMAIL=test@example.com
+        SHIPROCKET_PASSWORD=test_password
+        TWILIO_ACCOUNT_SID=test_sid
+        TWILIO_AUTH_TOKEN=test_token
+        TWILIO_VERIFY_SERVICEID=test_service
+        GOOGLE_CLIENT_ID=test_client_id
+        OTPLESS_CLIENT_ID=test_otpless_client_id
+        OTPLESS_CLIENT_SECRET=test_otpless_client_secret
+        EOF
         # Verify the app can start (timeout after 10 seconds)
         timeout 10s npm start || exit_code=$?
         if [ $exit_code -ne 124 ]; then

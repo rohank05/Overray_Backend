@@ -1,3 +1,4 @@
+import "./config/env.js";
 import Express from "express";
 import cors from "cors";
 import version1 from "./routes/index.js";
