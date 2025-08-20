@@ -23,11 +23,11 @@ app.post("/initiate", async (req, res) => {
 
         let totalAmount = 0;
         let totalWeight = 0;
-        let orderDetails = [];
+        const orderDetails = [];
 
         for (const product of products) {
             const productDetail = productDetails.find(
-                (p) => p._id.toString() === product._id
+                (p) => p._id.toString() === product._id,
             );
             if (!productDetail) continue;
             if (product.quantity > productDetail.quantity)
@@ -53,7 +53,7 @@ app.post("/initiate", async (req, res) => {
         const delivery_pincode = address.pincode;
         const delivery_charges = await shiprocket.calculateShippingRate(
             delivery_pincode,
-            totalWeight / 1000
+            totalWeight / 1000,
         );
         let appliedCoupon = null;
         if (coupon_code) {
@@ -74,7 +74,7 @@ app.post("/initiate", async (req, res) => {
                         if (appliedCoupon.max_discount_amount) {
                             discountAmount = Math.min(
                                 discountAmount,
-                                appliedCoupon.max_discount_amount
+                                appliedCoupon.max_discount_amount,
                             );
                         }
                     } else if (appliedCoupon.discount_type === "fixed") {
@@ -91,7 +91,7 @@ app.post("/initiate", async (req, res) => {
                             discountAmount = coupon.discount_value;
                         } else {
                             throw new Error(
-                                "This coupon is only valid for first-time purchases"
+                                "This coupon is only valid for first-time purchases",
                             );
                         }
                     }
@@ -136,9 +136,9 @@ app.post("/initiate", async (req, res) => {
             address: address_id,
             coupon: appliedCoupon
                 ? {
-                      code: appliedCoupon.code,
-                      discount_amount: appliedCoupon.discount_value,
-                  }
+                    code: appliedCoupon.code,
+                    discount_amount: appliedCoupon.discount_value,
+                }
                 : null,
             cgst: cgst,
             sgst: sgst,
@@ -147,7 +147,7 @@ app.post("/initiate", async (req, res) => {
             for (const product of order.products) {
                 schemas.product.updateOne(
                     { _id: product.product_id },
-                    { $inc: { quantity: -product.quantity } }
+                    { $inc: { quantity: -product.quantity } },
                 );
             }
         }
@@ -169,7 +169,7 @@ app.post("/complete", async (req, res) => {
     for (const product of order.products) {
         schemas.product.updateOne(
             { _id: product.product_id },
-            { $inc: { quantity: -product.quantity } }
+            { $inc: { quantity: -product.quantity } },
         );
     }
     order.status = "Processing";

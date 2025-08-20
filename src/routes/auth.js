@@ -75,7 +75,7 @@ app.post("/login/phone/verify", async (req, res) => {
     const message = await auth.loginWithPhoneVerify(
         phoneNumber,
         code,
-        requestId
+        requestId,
     );
     res.json(message);
 });
@@ -97,7 +97,7 @@ app.post(
         if (req.file) user.picture = req.file.filename;
         const message = await auth.updateUser(req.user._id, user);
         res.json(message);
-    }
+    },
 );
 
 app.post("/user/change-password", jwtHelper.verifyToken, async (req, res) => {

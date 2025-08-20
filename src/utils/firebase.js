@@ -19,7 +19,7 @@ class Firebase {
                 deviceToken.token,
                 title,
                 body,
-                data
+                data,
             );
         }
     }

@@ -51,7 +51,7 @@ import logger from "./utils/logger.js";
                 const user = jwtHelper.verifyGraphqlToken(req);
                 return { user };
             },
-        })
+        }),
     );
     app.use("/v1/admin", jwtHelper.verifyAdminToken, admin);
     app.use("/v1/notification", notification);
@@ -60,7 +60,7 @@ import logger from "./utils/logger.js";
     task.start();
     app.listen(
         process.env.PORT,
-        console.log(`Listening to port ${process.env.PORT}`)
+        console.log(`Listening to port ${process.env.PORT}`),
     );
     process.on("uncaughtException", (err) => {
         logger.error(err);

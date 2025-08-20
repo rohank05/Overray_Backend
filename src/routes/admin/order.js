@@ -51,7 +51,7 @@ app.post("/create-shipment", async (req, res) => {
         });
         const response = await shiprocket.createOrder(
             orderDetail,
-            order.courier_company_id
+            order.courier_company_id,
         );
         order.awb = response.awb_code;
         res.json(order);

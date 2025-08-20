@@ -14,7 +14,7 @@ function replaceTagsInTemplate(html, tags) {
     for (const [key, value] of Object.entries(tags)) {
         replacedHtml = replacedHtml.replace(
             new RegExp(`{{${key}}}`, "g"),
-            value
+            value,
         );
     }
     return replacedHtml;
@@ -24,7 +24,7 @@ const getEmailTemplate = async (templateName) => {
     const templatePath = path.join(
         __dirname,
         "email-templates",
-        `${templateName}.html`
+        `${templateName}.html`,
     );
     try {
         return fs.readFileSync(templatePath, "utf8");
@@ -63,12 +63,12 @@ const processEmail = async () => {
         if (templateHtml && email_recipient) {
             const replacedHtml = replaceTagsInTemplate(
                 templateHtml,
-                queueItem.tags
+                queueItem.tags,
             );
             const success = await sendEmail(
                 email_recipient,
                 queueItem.subject || "Email Notification",
-                replacedHtml
+                replacedHtml,
             );
 
             if (success) {
@@ -81,7 +81,7 @@ const processEmail = async () => {
             await queueItem.save();
         } else {
             console.error(
-                `Failed to process email: templateName=${queueItem.templateName}, recipientId=${queueItem._id}`
+                `Failed to process email: templateName=${queueItem.templateName}, recipientId=${queueItem._id}`,
             );
             queueItem.status = "failed";
             await queueItem.save();

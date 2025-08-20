@@ -78,7 +78,7 @@ if (loggingConfig.stdout !== false) {
             level: logLevel,
             destination: process.stdout,
             prettyPrint: { ...prettyPrintConfig, colorize: true },
-        })
+        }),
     );
 }
 if (loggingConfig.logLevel !== "error") {
@@ -87,7 +87,7 @@ if (loggingConfig.logLevel !== "error") {
             level: logLevel,
             destination: mainStream,
             prettyPrint: prettyPrintConfig,
-        })
+        }),
     );
 }
 
@@ -100,7 +100,7 @@ const logger = pino(
     multistream(streams, {
         dedupe: true,
         levels: { ...pino.levels, ...customLevels },
-    })
+    }),
 );
 
 export default logger;

@@ -7,7 +7,7 @@ class OTPLess {
     constructor() {
         if (!this.clientKey || !this.clientSecret) {
             throw new Error(
-                "Missing required environment variables: OTPLESS_CLIENT_ID and/or OTPLESS_CLIENT_SECRET"
+                "Missing required environment variables: OTPLESS_CLIENT_ID and/or OTPLESS_CLIENT_SECRET",
             );
         }
     }
@@ -85,7 +85,7 @@ class OTPLess {
         if (!response.ok) {
             const errorData = await response.json();
             throw new Error(
-                errorData.message || `HTTP error! status: ${response.status}`
+                errorData.message || `HTTP error! status: ${response.status}`,
             );
         }
         return await response.json();

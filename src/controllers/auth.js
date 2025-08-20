@@ -53,7 +53,7 @@ const loginUser = async (loginData) => {
         };
     const isPasswordValid = await bcrypt.compare(
         loginData.password,
-        user.password
+        user.password,
     );
     if (!isPasswordValid) {
         return { message: "Invalid email or password", error: true };
@@ -159,7 +159,7 @@ const updatePassword = async (email, password) => {
     password = await bcrypt.hash(password, 10);
     const user = await schemas.security_user.findOneAndUpdate(
         { email },
-        { $set: { password } }
+        { $set: { password } },
     );
     schemas.reset_password.findOneAndDelete({ email });
     return { message: "Password Reset Successful" };

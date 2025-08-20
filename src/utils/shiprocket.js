@@ -36,12 +36,12 @@ class Shiprocket {
                         "Content-Type": "application/json",
                         Authorization: `Bearer ${this.token}`,
                     },
-                }
+                },
             ).then((res) => res.json());
             const company_id = response.data.shiprocket_recommended_courier_id;
             const delivery_data =
                 response.data.available_courier_companies.find(
-                    (x) => (x.courier_company_id = company_id)
+                    (x) => (x.courier_company_id = company_id),
                 );
             return delivery_data;
         } catch (error) {
