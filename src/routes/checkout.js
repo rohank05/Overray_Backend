@@ -12,7 +12,7 @@ const razorpay = new Razorpay({
 app.post("/initiate", async (req, res) => {
     try {
         const { _id: userId } = req.user;
-        const { products, address_id, coupon_code, isCOD } = req.body;
+        const { products, address_id: addressId, coupon_code: couponCode, isCOD } = req.body;
         if (!products) return res.sendStatus(400);
         const productsIds = products.map((product) => product._id);
         const productDetails = await schemas.product.find({
@@ -23,11 +23,11 @@ app.post("/initiate", async (req, res) => {
 
         let totalAmount = 0;
         let totalWeight = 0;
-        let orderDetails = [];
+        const orderDetails = [];
 
         for (const product of products) {
             const productDetail = productDetails.find(
-                (p) => p._id.toString() === product._id
+                (p) => p._id.toString() === product._id,
             );
             if (!productDetail) continue;
             if (product.quantity > productDetail.quantity)
@@ -49,16 +49,16 @@ app.post("/initiate", async (req, res) => {
                     product.quantity,
             });
         }
-        const address = await schemas.address.findById(address_id);
-        const delivery_pincode = address.pincode;
-        const delivery_charges = await shiprocket.calculateShippingRate(
-            delivery_pincode,
-            totalWeight / 1000
+        const address = await schemas.address.findById(addressId);
+        const deliveryPincode = address.pincode;
+        const deliveryCharges = await shiprocket.calculateShippingRate(
+            deliveryPincode,
+            totalWeight / 1000,
         );
         let appliedCoupon = null;
-        if (coupon_code) {
+        if (couponCode) {
             appliedCoupon = await schemas.coupon.findOne({
-                code: coupon_code.toUpperCase(),
+                code: couponCode.toUpperCase(),
                 is_active: true,
                 valid_from: { $lte: new Date() },
                 valid_until: { $gte: new Date() },
@@ -74,7 +74,7 @@ app.post("/initiate", async (req, res) => {
                         if (appliedCoupon.max_discount_amount) {
                             discountAmount = Math.min(
                                 discountAmount,
-                                appliedCoupon.max_discount_amount
+                                appliedCoupon.max_discount_amount,
                             );
                         }
                     } else if (appliedCoupon.discount_type === "fixed") {
@@ -82,16 +82,16 @@ app.post("/initiate", async (req, res) => {
                     } else if (
                         appliedCoupon.discount_type === "free_shipping"
                     ) {
-                        delivery_charges.rate = 0;
+                        deliveryCharges.rate = 0;
                     } else if (appliedCoupon.discount_type === "first-time") {
                         const orderCount = await schemas.order.countDocuments({
                             user_id: userId,
                         });
                         if (orderCount === 0) {
-                            discountAmount = coupon.discount_value;
+                            discountAmount = appliedCoupon.discount_value;
                         } else {
                             throw new Error(
-                                "This coupon is only valid for first-time purchases"
+                                "This coupon is only valid for first-time purchases",
                             );
                         }
                     }
@@ -109,7 +109,7 @@ app.post("/initiate", async (req, res) => {
             }
         }
 
-        totalAmount += delivery_charges.rate;
+        totalAmount += deliveryCharges.rate;
 
         const taxRate = 0.05;
         const sgst = totalAmount * taxRate;
@@ -131,14 +131,14 @@ app.post("/initiate", async (req, res) => {
             total_amount: totalAmount,
             status: isCOD ? "Processing" : "Pending",
             razorpay_orderId: isCOD ? null : razorpayOrder.id,
-            delivery_charges: delivery_charges.rate,
-            courier_company_id: delivery_charges.courier_company_id,
-            address: address_id,
+            delivery_charges: deliveryCharges.rate,
+            courier_company_id: deliveryCharges.courier_company_id,
+            address: addressId,
             coupon: appliedCoupon
                 ? {
-                      code: appliedCoupon.code,
-                      discount_amount: appliedCoupon.discount_value,
-                  }
+                    code: appliedCoupon.code,
+                    discount_amount: appliedCoupon.discount_value,
+                }
                 : null,
             cgst: cgst,
             sgst: sgst,
@@ -147,7 +147,7 @@ app.post("/initiate", async (req, res) => {
             for (const product of order.products) {
                 schemas.product.updateOne(
                     { _id: product.product_id },
-                    { $inc: { quantity: -product.quantity } }
+                    { $inc: { quantity: -product.quantity } },
                 );
             }
         }
@@ -169,7 +169,7 @@ app.post("/complete", async (req, res) => {
     for (const product of order.products) {
         schemas.product.updateOne(
             { _id: product.product_id },
-            { $inc: { quantity: -product.quantity } }
+            { $inc: { quantity: -product.quantity } },
         );
     }
     order.status = "Processing";

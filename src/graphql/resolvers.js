@@ -1,18 +1,20 @@
 import schemas from "../database/schemas/index.js";
 import mongoose from "mongoose";
 import { GraphQLError } from "graphql";
+import cartService from "../services/cartService.js";
+import wishlistService from "../services/wishlistService.js";
+import { validateInput, cartValidation, wishlistValidation } from "../validators/inputValidation.js";
+import { ERROR_CODES, ERROR_MESSAGES } from "../constants/index.js";
+import logger from "../utils/logger.js";
 
 const checkAuthentication = (context) => {
     if (!context.user)
-        throw new GraphQLError(
-            "You are not authorized to perform this action.",
-            {
-                extensions: {
-                    code: "UNAUTHENTICATED",
-                    http: { status: 401 },
-                },
-            }
-        );
+        throw new GraphQLError(ERROR_MESSAGES.UNAUTHORIZED, {
+            extensions: {
+                code: ERROR_CODES.UNAUTHENTICATED,
+                http: { status: 401 },
+            },
+        });
 };
 
 export const resolvers = {
@@ -72,7 +74,7 @@ export const resolvers = {
                 if (categories && categories.length > 0) {
                     filter.categories = {
                         $in: categories.map(
-                            (id) => new mongoose.Types.ObjectId(id)
+                            (id) => new mongoose.Types.ObjectId(id),
                         ),
                     };
                 }
@@ -115,7 +117,7 @@ export const resolvers = {
                 }
             }
 
-            let aggregationPipeline = [];
+            const aggregationPipeline = [];
 
             // Add $text search as the first stage if textSearchApplied
             if (textSearchApplied) {
@@ -139,7 +141,7 @@ export const resolvers = {
                             doc: { $first: "$$ROOT" },
                         },
                     },
-                    { $replaceRoot: { newRoot: "$doc" } }
+                    { $replaceRoot: { newRoot: "$doc" } },
                 );
             }
 
@@ -167,35 +169,11 @@ export const resolvers = {
         },
         cart: async (parent, args, contextValue) => {
             checkAuthentication(contextValue);
-            const data = await schemas.cart
-                .findOne({
-                    user_id: contextValue.user._id,
-                })
-                .populate({
-                    path: "products.productId",
-                    populate: [
-                        { path: "categories" },
-                        { path: "product_images" },
-                    ],
-                })
-                .exec();
-            return data;
+            return await cartService.getUserCart(contextValue.user._id);
         },
         wishlist: async (parent, args, contextValue) => {
             checkAuthentication(contextValue);
-            const data = await schemas.wishlist
-                .findOne({
-                    user_id: contextValue.user._id,
-                })
-                .populate({
-                    path: "products",
-                    populate: [
-                        { path: "categories" },
-                        { path: "product_images" },
-                    ],
-                })
-                .exec();
-            return data;
+            return await wishlistService.getUserWishlist(contextValue.user._id);
         },
         category: async () => {
             return await schemas.category.find().exec();
@@ -206,9 +184,9 @@ export const resolvers = {
         lookup: async () => {
             return await schemas.lookup.find().exec();
         },
-        coupons: async (_, { filter }, { models }) => {
+        coupons: async (_, { filter }, { _models }) => {
             try {
-                let query = {};
+                const query = {};
 
                 if (filter) {
                     if (filter.is_active !== undefined) {
@@ -237,15 +215,15 @@ export const resolvers = {
 
                 return await schemas.coupon.find(query);
             } catch (error) {
-                console.error("Error fetching coupons:", error);
+                logger.error("Error fetching coupons:", error);
                 throw new Error("Failed to fetch coupons");
             }
         },
-        coupon: async (_, { id }, { models }) => {
+        coupon: async (_, { id }, { _models }) => {
             try {
                 return await schemas.coupon.findById(id);
             } catch (error) {
-                console.error("Error fetching coupon:", error);
+                logger.error("Error fetching coupon:", error);
                 throw new Error("Failed to fetch coupon");
             }
         },
@@ -269,92 +247,64 @@ export const resolvers = {
         },
         addProductToCart: async (parent, args, contextValue) => {
             checkAuthentication(contextValue);
-            const { product_id, quantity = 1 } = args.products;
-            let cart = await schemas.cart.findOne({
-                user_id: contextValue.user._id,
-            });
-            if (cart) {
-                const plainProducts = cart.products.toObject();
+            const validatedInput = validateInput(args.products, cartValidation.addToCart);
+            const { product_id: productId, quantity } = validatedInput;
 
-                const existingProductIndex = plainProducts.findIndex(
-                    (x) => x.productId.toString() === product_id.toString()
-                );
-                if (existingProductIndex !== -1) {
-                    cart.products[existingProductIndex].quantity = quantity;
-                } else {
-                    cart.products.push({
-                        productId: product_id,
-                        quantity: quantity,
-                    });
-                }
-                return cart.save();
-            }
-            cart = new schemas.cart({
-                user_id: contextValue.user._id,
-                products: [
-                    {
-                        productId: product_id,
-                        quantity: !quantity ? 1 : quantity,
-                    },
-                ],
-            });
-            return cart.save();
+            return await cartService.addProductToCart(
+                contextValue.user._id,
+                productId,
+                quantity,
+            );
         },
         removeProductFromCart: async (parent, args, contextValue) => {
             checkAuthentication(contextValue);
-            return schemas.cart.findOneAndUpdate(
-                { user_id: contextValue.user._id },
-                { $pull: { products: { productId: args.product_id } } },
-                { new: true, useFindAndModify: false }
+            const validatedInput = validateInput(args, cartValidation.removeFromCart);
+
+            return await cartService.removeProductFromCart(
+                contextValue.user._id,
+                validatedInput.product_id,
             );
         },
         addProductToWishlist: async (parent, args, contextValue) => {
             checkAuthentication(contextValue);
-            let wishlist = await schemas.wishlist.findOne({
-                user_id: contextValue.user._id,
-            });
-            if (!wishlist) {
-                wishlist = new schemas.wishlist({
-                    user_id: contextValue.user._id,
-                    products: [args.product_id],
-                });
-                wishlist = await wishlist.save();
-                return wishlist;
-            }
-            wishlist.products = [...wishlist.products, args.product_id];
-            wishlist = await wishlist.save();
-            return wishlist;
+            const validatedInput = validateInput(args, wishlistValidation.addToWishlist);
+
+            return await wishlistService.addProductToWishlist(
+                contextValue.user._id,
+                validatedInput.product_id,
+            );
         },
         removeProductFromWishlist: async (parent, args, contextValue) => {
             checkAuthentication(contextValue);
-            return schemas.wishlist.findOneAndUpdate(
-                { user_id: contextValue.user._id },
-                { $pull: { products: args.product_id } },
-                { new: true, useFindAndModify: false }
+            const validatedInput = validateInput(args, wishlistValidation.removeFromWishlist);
+
+            return await wishlistService.removeProductFromWishlist(
+                contextValue.user._id,
+                validatedInput.product_id,
             );
         },
         addProductReview: async (parent, args, contextValue) => {
             checkAuthentication(contextValue);
-            const { review, score, product_id } = args.review;
+            const { review, score, product_id: productId } = args.review;
 
-            let product_review = await schemas.product_review.findOne({
+            let productReview = await schemas.product_review.findOne({
                 user_id: contextValue.user._id,
-                product_id: product_id,
+                product_id: productId,
             });
-            if (!product_review) {
+            if (!productReview) {
                 const newReview = new schemas.product_review({
                     user_id: contextValue.user._id,
-                    product_id: product_id,
+                    product_id: productId,
                     review: review,
                     score: score,
                 });
-                product_review = await newReview.save();
-                return product_review;
+                productReview = await newReview.save();
+                return productReview;
             }
-            product_review.review = review;
-            product_review.score = score;
-            product_review = await product_review.save();
-            return product_review;
+            productReview.review = review;
+            productReview.score = score;
+            productReview = await productReview.save();
+            return productReview;
         },
     },
 };

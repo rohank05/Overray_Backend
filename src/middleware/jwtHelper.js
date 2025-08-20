@@ -19,7 +19,7 @@ const verifyVerificationToken = (token) => {
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET_VERIFICATION);
         return decoded;
-    } catch (err) {
+    } catch (_err) {
         return null;
     }
 };
@@ -42,7 +42,7 @@ const verifyToken = async (req, res, next) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.user = decoded.user;
         next();
-    } catch (err) {
+    } catch (_err) {
         res.status(400).send("Invalid token.");
     }
 };
@@ -77,7 +77,7 @@ const verifyAdminToken = async (req, res, next) => {
             return res.status(401).send("Unauthorized request");
         req.user = decoded.user;
         next();
-    } catch (err) {
+    } catch (_err) {
         res.status(401).send("Unauthorised");
     }
 };

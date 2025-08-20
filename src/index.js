@@ -1,6 +1,6 @@
 import Express from "express";
 import cors from "cors";
-import version_1 from "./routes/index.js";
+import version1 from "./routes/index.js";
 import databaseOperations from "./database/databaseOperations.js";
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@apollo/server/express4";
@@ -33,7 +33,7 @@ import logger from "./utils/logger.js";
 
     app.use(Express.json());
 
-    app.use((err, req, res, next) => {
+    app.use((err, req, res, _next) => {
         logger.error(err);
         res.status(500).json({
             message:
@@ -41,7 +41,7 @@ import logger from "./utils/logger.js";
         });
     });
 
-    app.use("/v1", version_1);
+    app.use("/v1", version1);
 
     app.use(
         "/v1/graphql",
@@ -51,17 +51,16 @@ import logger from "./utils/logger.js";
                 const user = jwtHelper.verifyGraphqlToken(req);
                 return { user };
             },
-        })
+        }),
     );
     app.use("/v1/admin", jwtHelper.verifyAdminToken, admin);
     app.use("/v1/notification", notification);
     shiprocket.initialize();
     const task = cron.schedule("* * * * *", processEmail);
     task.start();
-    app.listen(
-        process.env.PORT,
-        console.log(`Listening to port ${process.env.PORT}`)
-    );
+    app.listen(process.env.PORT, () => {
+        logger.info(`Listening to port ${process.env.PORT}`);
+    });
     process.on("uncaughtException", (err) => {
         logger.error(err);
     });

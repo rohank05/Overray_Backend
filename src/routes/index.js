@@ -11,7 +11,7 @@ app.get("/file/:filename", (req, res) => {
     const filePath = path.join(
         path.resolve(),
         "src/uploads",
-        req.params.filename
+        req.params.filename,
     );
     res.sendFile(filePath);
 });

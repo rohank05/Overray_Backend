@@ -53,7 +53,7 @@ const loginUser = async (loginData) => {
         };
     const isPasswordValid = await bcrypt.compare(
         loginData.password,
-        user.password
+        user.password,
     );
     if (!isPasswordValid) {
         return { message: "Invalid email or password", error: true };
@@ -144,12 +144,12 @@ const forgotPassword = async (email) => {
 };
 
 const verifyOTP = async (email, otp) => {
-    const reset_password = await schemas.reset_password.findOne({
+    const resetPassword = await schemas.reset_password.findOne({
         email,
         otp,
         expiresAt: { $gt: new Date() },
     });
-    if (!reset_password) {
+    if (!resetPassword) {
         return { message: "Invalid OTP", error: true };
     }
     return { message: "OTP verified successfully" };
@@ -157,19 +157,19 @@ const verifyOTP = async (email, otp) => {
 
 const updatePassword = async (email, password) => {
     password = await bcrypt.hash(password, 10);
-    const user = await schemas.security_user.findOneAndUpdate(
+    await schemas.security_user.findOneAndUpdate(
         { email },
-        { $set: { password } }
+        { $set: { password } },
     );
     schemas.reset_password.findOneAndDelete({ email });
     return { message: "Password Reset Successful" };
 };
 
 const logout = async (token) => {
-    const blocked_token = new schemas.blocked_token({
+    const blockedToken = new schemas.blocked_token({
         token,
     });
-    await blocked_token.save();
+    await blockedToken.save();
     return { message: "Logout Succesfully" };
 };
 

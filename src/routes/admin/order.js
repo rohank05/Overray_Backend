@@ -5,9 +5,9 @@ import logger from "../../utils/logger.js";
 const app = Router();
 app.post("/create-shipment", async (req, res) => {
     try {
-        const { order_id, height, weight, length, breadth } = req.body;
+        const { order_id: orderId, height, weight, length, breadth } = req.body;
         const order = await schemas.order
-            .findById(order_id)
+            .findById(orderId)
             .populate("address")
             .populate("products.product_id")
             .exec();
@@ -28,7 +28,7 @@ app.post("/create-shipment", async (req, res) => {
             billing_email: order.address.email,
             billing_phone: order.address.phone_number,
             shipping_is_billing: true,
-            payment_method: isCOD ? "COD" : "Prepaid",
+            payment_method: order.payment_method === "COD" ? "COD" : "Prepaid",
             shipping_charges: 0,
             giftwrap_charges: 0,
             transaction_charges: 0,
@@ -51,7 +51,7 @@ app.post("/create-shipment", async (req, res) => {
         });
         const response = await shiprocket.createOrder(
             orderDetail,
-            order.courier_company_id
+            order.courier_company_id,
         );
         order.awb = response.awb_code;
         res.json(order);

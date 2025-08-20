@@ -27,7 +27,10 @@ app.post("/register/google", async (req, res) => {
             idToken: token,
             audience: process.env.GOOGLE_CLIENT_ID,
         })
-        .catch(console.error);
+        .catch((error) => {
+            logger.error("Error verifying Google token:", error);
+            return null;
+        });
     const payload = ticket.getPayload();
     if (payload.email !== email) return res.json({ error: "Invalid email" });
     const message = await auth.registerWithGoogle({
@@ -75,7 +78,7 @@ app.post("/login/phone/verify", async (req, res) => {
     const message = await auth.loginWithPhoneVerify(
         phoneNumber,
         code,
-        requestId
+        requestId,
     );
     res.json(message);
 });
@@ -97,7 +100,7 @@ app.post(
         if (req.file) user.picture = req.file.filename;
         const message = await auth.updateUser(req.user._id, user);
         res.json(message);
-    }
+    },
 );
 
 app.post("/user/change-password", jwtHelper.verifyToken, async (req, res) => {

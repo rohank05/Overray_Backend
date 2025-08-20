@@ -1,3 +1,5 @@
+import logger from "./logger.js";
+
 class OTPLess {
     clientKey = process.env.OTPLESS_CLIENT_ID;
     clientSecret = process.env.OTPLESS_CLIENT_SECRET;
@@ -7,7 +9,7 @@ class OTPLess {
     constructor() {
         if (!this.clientKey || !this.clientSecret) {
             throw new Error(
-                "Missing required environment variables: OTPLESS_CLIENT_ID and/or OTPLESS_CLIENT_SECRET"
+                "Missing required environment variables: OTPLESS_CLIENT_ID and/or OTPLESS_CLIENT_SECRET",
             );
         }
     }
@@ -44,7 +46,7 @@ class OTPLess {
 
             return result;
         } catch (error) {
-            console.error("OTP sending failed:", error);
+            logger.error("OTP sending failed:", error);
             throw error;
         }
     }
@@ -68,7 +70,7 @@ class OTPLess {
 
             return result;
         } catch (error) {
-            console.error("OTP verification failed:", error);
+            logger.error("OTP verification failed:", error);
             throw error;
         }
     }
@@ -85,7 +87,7 @@ class OTPLess {
         if (!response.ok) {
             const errorData = await response.json();
             throw new Error(
-                errorData.message || `HTTP error! status: ${response.status}`
+                errorData.message || `HTTP error! status: ${response.status}`,
             );
         }
         return await response.json();

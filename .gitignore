@@ -5,3 +5,11 @@ audit.json
 src/uploads
 logs
 .env.local
+
+# Test coverage
+coverage/
+*.lcov
+
+# Temporary files
+tmp/
+temp/

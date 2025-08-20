@@ -14,7 +14,7 @@ to store and map business base configurations for later use in the application. 
 for (const businessBaseConfigName in businessBaseConfigs) {
     classMap.register(
         businessBaseConfigName,
-        businessBaseConfigs[businessBaseConfigName]
+        businessBaseConfigs[businessBaseConfigName],
     );
 }
 
@@ -52,7 +52,7 @@ app.post(
         const files = req.files;
         const result = await businessObject.saveOrUpdate({ data, files });
         return res.json(result);
-    }
+    },
 );
 
 app.post("/:businessObjectName/delete", async (req, res) => {

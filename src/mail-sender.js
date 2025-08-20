@@ -3,6 +3,7 @@ import schemas from "./database/schemas/index.js";
 import fs from "fs";
 import sgMail from "@sendgrid/mail";
 import { fileURLToPath } from "url";
+import logger from "./utils/logger.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -14,7 +15,7 @@ function replaceTagsInTemplate(html, tags) {
     for (const [key, value] of Object.entries(tags)) {
         replacedHtml = replacedHtml.replace(
             new RegExp(`{{${key}}}`, "g"),
-            value
+            value,
         );
     }
     return replacedHtml;
@@ -24,12 +25,12 @@ const getEmailTemplate = async (templateName) => {
     const templatePath = path.join(
         __dirname,
         "email-templates",
-        `${templateName}.html`
+        `${templateName}.html`,
     );
     try {
         return fs.readFileSync(templatePath, "utf8");
     } catch (error) {
-        console.error(`Error reading template file ${templateName}:`, error);
+        logger.error(`Error reading template file ${templateName}:`, error);
         return null;
     }
 };
@@ -46,7 +47,7 @@ async function sendEmail(recipient, subject, html) {
         await sgMail.send(msg);
         return true;
     } catch (error) {
-        console.error("Error sending email:", error);
+        logger.error("Error sending email:", error);
         return false;
     }
 }
@@ -57,18 +58,18 @@ const processEmail = async () => {
         .exec();
     for (const queueItem of pendingEmails) {
         const templateHtml = await getEmailTemplate(queueItem.email_template);
-        const email_recipient = await schemas.email_recipient.findOne({
+        const emailRecipient = await schemas.email_recipient.findOne({
             email_queue_id: queueItem._id,
         });
-        if (templateHtml && email_recipient) {
+        if (templateHtml && emailRecipient) {
             const replacedHtml = replaceTagsInTemplate(
                 templateHtml,
-                queueItem.tags
+                queueItem.tags,
             );
             const success = await sendEmail(
-                email_recipient,
+                emailRecipient,
                 queueItem.subject || "Email Notification",
-                replacedHtml
+                replacedHtml,
             );
 
             if (success) {
@@ -80,8 +81,8 @@ const processEmail = async () => {
 
             await queueItem.save();
         } else {
-            console.error(
-                `Failed to process email: templateName=${queueItem.templateName}, recipientId=${queueItem._id}`
+            logger.error(
+                `Failed to process email: templateName=${queueItem.templateName}, recipientId=${queueItem._id}`,
             );
             queueItem.status = "failed";
             await queueItem.save();

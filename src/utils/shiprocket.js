@@ -28,27 +28,27 @@ class Shiprocket {
 
     async calculateShippingRate(deliveryPinCode, totalWeight) {
         try {
-            const response = await fetch(
-                `${this.apiUrl}/courier/serviceability?pickup_postcode=110045&delivery_postcode=${deliveryPinCode}&weight=${totalWeight}&cod=0`,
-                {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${this.token}`,
-                    },
-                }
-            ).then((res) => res.json());
-            const company_id = response.data.shiprocket_recommended_courier_id;
-            const delivery_data =
+            const serviceabilityUrl = `${this.apiUrl}/courier/serviceability` +
+                `?pickup_postcode=110045&delivery_postcode=${deliveryPinCode}` +
+                `&weight=${totalWeight}&cod=0`;
+            const response = await fetch(serviceabilityUrl, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${this.token}`,
+                },
+            }).then((res) => res.json());
+            const companyId = response.data.shiprocket_recommended_courier_id;
+            const deliveryData =
                 response.data.available_courier_companies.find(
-                    (x) => (x.courier_company_id = company_id)
+                    (x) => (x.courier_company_id = companyId),
                 );
-            return delivery_data;
+            return deliveryData;
         } catch (error) {
             logger.error(error);
         }
     }
-    async createOrder(orderDetails, courier_company_id) {
+    async createOrder(orderDetails, courierCompanyId) {
         try {
             const order = await fetch(`${this.apiUrl}/orders/create/adhoc`, {
                 method: "POST",
@@ -58,9 +58,9 @@ class Shiprocket {
                 },
                 body: JSON.stringify(orderDetails),
             }).then((res) => res.json());
-            const shipment_details = {
+            const shipmentDetails = {
                 shipment_id: order.shipment_id,
-                courier_id: courier_company_id,
+                courier_id: courierCompanyId,
             };
             const shipment = await fetch(`${this.apiUrl}/courier/assign/awb`, {
                 method: "POST",
@@ -68,7 +68,7 @@ class Shiprocket {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${this.token}`,
                 },
-                body: JSON.stringify(shipment_details),
+                body: JSON.stringify(shipmentDetails),
             }).then((res) => res.json());
             return shipment;
         } catch (error) {

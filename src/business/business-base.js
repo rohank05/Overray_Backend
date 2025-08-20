@@ -50,7 +50,7 @@ class BusinessBase {
         try {
             if (files.length > 0)
                 throw new Error(
-                    "This request does not support files in request"
+                    "This request does not support files in request",
                 );
             const { _id, ...updateData } = data;
             let result;
